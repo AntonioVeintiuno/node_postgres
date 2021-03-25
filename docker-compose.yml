@@ -1,0 +1,40 @@
+version: '3.7'
+services:
+  postgres_db:
+    container_name: postgres
+    image: postgres:12.5
+    restart: always
+    environment:
+      POSTGRES_DB: 'develop_db'
+      POSTGRES_USER: 'root'
+      POSTGRES_PASSWORD: 'demo'
+      POSTGRES_ROOT_PASSWORD: 'demo'
+    networks:
+      - developnet
+    volumes:
+      - ./data/postgresql/:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  api:
+    container_name: node_api
+    tty: true
+    stdin_open: true
+    build: .
+    image: 'node_api:0.0.1'
+    command: sh -c 'npm run dev'
+    ports:
+      - 8000:8000
+    working_dir: /app
+    volumes:
+      - .:/app
+      - node_modules
+    env_file:
+      - .env.development
+    depends_on:
+      - postgres_db
+    networks:
+      - developnet
+networks:
+  developnet:
+    external: true
